@@ -13,7 +13,7 @@ class UserController extends Controller
         $user = UserModel::firstOrCreate(
             [
                 'username' => 'manager',
-                'nama' => 'Manager',
+                'nama' => 'Manager', 
             ],
         );
         return view('user', ['data' => $user]);
