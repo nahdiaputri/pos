@@ -44,9 +44,7 @@ class UserController extends Controller
         if ($request->level_id) {
             $users->where('level_id', $request->level_id);
         }
-
         return DataTables::of($users)
-            //menambahkan kolom index / no urut (default nama kolom: DT_RowIndex)
             ->addIndexColumn()
             ->addColumn('aksi', function ($user) {
                 /*$btn = '<a href=" ' . url('/user/' . $user->user_id) . '" class="btn btn-info btn-sm">Detail</a>';
@@ -58,8 +56,7 @@ class UserController extends Controller
                     $btn = '<button onclick="modalAction(\''.url('/user/' . $user->user_id .'/show_ajax').'\')" class="btn btn-info btn-sm">Detail</button> ';
                     $btn .= '<button onclick="modalAction(\''.url('/user/' . $user->user_id .'/edit_ajax').'\')" class="btn btn-warning btn-sm">Edit</button> ';
                     $btn .= '<button onclick="modalAction(\''.url('/user/' . $user->user_id .'/delete_ajax').'\')" class="btn btn-danger btn-sm">Hapus</button> ';
-
-                return $btn;
+                    return $btn;
             })
             ->rawColumns(['aksi']) //MEMBERITAHU BAHWA KOLOM AKSI ADALAH HTML
             ->make(true);
@@ -189,28 +186,9 @@ class UserController extends Controller
         return view('user.edit_ajax', ['user' => $user,'level'=> $level]);
     }
 
-    // Menyimpan perubahan data user
-    public function update(Request $request, string $id)
-    {
-        $request->validate([
-            'username' => 'required|string|min:3|unique:m_user,username,' . $id . ',user_id',
-            'nama' => 'required|string|max:100',
-            'password' => 'nullable|min:5',
-            'level_id' => 'required|integer',
-        ]);
-
-        UserModel::find($id)->update([
-            'username' => $request->username,
-            'nama' => $request->nama,
-            'password' => $request->password ? bcrypt($request->password) : UserModel::find($id)->password,
-            'level_id' => $request->level_id,
-        ]);
-
-        return redirect('/user')->with('success', 'Data user berhasil diubah');
-    }
-
     // Menyimpan perubahan data user via ajax
-    public function update_ajax(Request $request, string $id){
+    public function update_ajax(Request $request, $id)
+    {
         //cek apakah request dari ajax
         if($request->ajax() || $request->wantsJson()){
             $rules = [
@@ -247,6 +225,56 @@ class UserController extends Controller
         }
         return redirect('/');
     }
+    //konfirm ajax
+    public function confirm_ajax(string $id){
+        $user = UserModel::find($id);
+
+        return view('user.confirm_ajax', ['user' =>$user]);
+    }
+
+    //delete ajax
+    public function delete_ajax(Request $request, $id)
+    {
+        //cek apakah req dari ajax
+        if($request->ajax() || $request->wantsJson()){
+            $user = UserModel::find($id);
+            if($user){
+                $user->delete();
+                return response()->json([
+                    'status'=> true,
+                    'message'=> 'Data berhasil dihapus'
+                ]);
+            }else{
+                return response()->json([
+                    'status'=> false,
+                    'message'=> 'Data tidak ditemuka'
+                ]);
+            }
+        } 
+        return redirect('/');   
+    }
+
+    // Menyimpan perubahan data user
+    public function update(Request $request, string $id)
+    {
+        $request->validate([
+            'username' => 'required|string|min:3|unique:m_user,username,' . $id . ',user_id',
+            'nama' => 'required|string|max:100',
+            'password' => 'nullable|min:5',
+            'level_id' => 'required|integer',
+        ]);
+
+        UserModel::find($id)->update([
+            'username' => $request->username,
+            'nama' => $request->nama,
+            'password' => $request->password ? bcrypt($request->password) : UserModel::find($id)->password,
+            'level_id' => $request->level_id,
+        ]);
+
+        return redirect('/user')->with('success', 'Data user berhasil diubah');
+    }
+
+    
     // Menghapus data user
 public function destroy(string $id)
     {
