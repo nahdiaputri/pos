@@ -6,7 +6,7 @@ use App\Models\LevelModel;
 use App\Models\UserModel;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Http\Request;
-use Yajra\DataTables\DataTables as DataTablesDataTables;
+use Illuminate\Support\Facades\Log;
 use Yajra\DataTables\Facades\DataTables;
 
 class UserController extends Controller
@@ -47,16 +47,16 @@ class UserController extends Controller
         return DataTables::of($users)
             ->addIndexColumn()
             ->addColumn('aksi', function ($user) {
-                /*$btn = '<a href=" ' . url('/user/' . $user->user_id) . '" class="btn btn-info btn-sm">Detail</a>';
-                $btn .= '<a href=" ' . url('/user/' . $user->user_id . '/edit') . '" class="btn btn-warning btn-sm">Edit</a>';
-                $btn .= '<form class="d-inline-block" method="POST" action="' .
-                    url('/user/' . $user->user_id) . '">'
-                    . csrf_field() . method_field('DELETE') .
-                    '<button type="submit" class="btn btn-danger btn-sm" onclick="return confirm(\'Apakah Anda yakit menghapus data ini?\');">Hapus</button></form>';*/
-                    $btn = '<button onclick="modalAction(\''.url('/user/' . $user->user_id .'/show_ajax').'\')" class="btn btn-info btn-sm">Detail</button> ';
-                    $btn .= '<button onclick="modalAction(\''.url('/user/' . $user->user_id .'/edit_ajax').'\')" class="btn btn-warning btn-sm">Edit</button> ';
-                    $btn .= '<button onclick="modalAction(\''.url('/user/' . $user->user_id .'/delete_ajax').'\')" class="btn btn-danger btn-sm">Hapus</button> ';
-                    return $btn;
+               // $btn = '<a href="' . url('/user/' . $user->user_id) . '" class="btn btn-info btn-sm">Detail</a> ';
+                 // $btn .= '<a href="' . url('/user/' . $user->user_id . '/edit') . '" class="btn btn-warning btn-sm">Edit</a> ';
+                 // $btn .= '<form class="d-inline-block" method="POST" action="' . url('/user/' . $user->user_id) . '">'
+                 //     . csrf_field() . method_field('DELETE') .
+                 //     '<button type="submit" class="btn btn-danger btn-sm" onclick="return confirm(\'Apakah Anda yakin menghapus data ini?\');">Hapus</button></form>';
+                 // $btn = '<button onclick="modalAction(\'' . url('/user/' . $user->user_id . '/show_ajax') . '\')" class="btn btn-info btn-sm">Detail</button> ';
+                 $btn = '<button onclick="modalAction(\'' . url('/user/' . $user->user_id . '/show_ajax') . '\')" class="btn btn-info btn-sm">Detail</button> ';
+                 $btn .= '<button onclick="modalAction(\'' . url('/user/' . $user->user_id . '/edit_ajax') . '\')" class="btn btn-warning btn-sm">Edit</button> ';
+                 $btn .= '<button onclick="modalAction(\'' . url('/user/' . $user->user_id . '/delete_ajax') . '\')" class="btn btn-danger btn-sm">Hapus</button> ';
+                 return $btn;
             })
             ->rawColumns(['aksi']) //MEMBERITAHU BAHWA KOLOM AKSI ADALAH HTML
             ->make(true);
@@ -179,12 +179,11 @@ class UserController extends Controller
         return view('user.edit', ['breadcrumb' => $breadcrumb, 'page' => $page, 'user' => $user, 'level' => $level, 'activeMenu' => $activeMenu]);
     }
 
-    public function show_ajax(string $id){
-        $user = UserModel::find($id);
-        $level = LevelModel::all();
-
-        return view('user.show_ajax', ['user' => $user,'level'=> $level]);
-    }
+    public function show_ajax(string $id)
+     {
+         $user = UserModel::with('level')->find($id);
+         return view('user.show_ajax', ['user' => $user]);
+     }
 
     //Menampilkan halaman form edit user ajax
     public function edit_ajax(string $id) {
@@ -245,29 +244,31 @@ class UserController extends Controller
     {
         //cek apakah req dari ajax
         if($request->ajax() || $request->wantsJson()){
-            $user = UserModel::find($id);
-            if($user){
-                try {
-                    $user->delete();
-                return response()->json([
-                    'status'=> true,
-                    'message'=> 'Data berhasil dihapus'
-                ]);
-                } catch (\Throwable $th) {
-                return response()->json([
-                    'status'=> false,
-                    'message'=> 'Data tidak bisa dihapus'
-                ]);
+            try {
+                $check = UserModel::find($id);
+                if ($check) {
+                    $check->delete();
+                    return response()->json([
+                        'status' => true,
+                        'message' => 'Data berhasil dihapus'
+                    ]);
+                } else {
+                    return response()->json([
+                        'status' => false,
+                        'message' => 'Data tidak ditemukan'
+                    ]);
                 }
-                
-            }else{
-                return response()->json([
-                    'status'=> false,
-                    'message'=> 'Data tidak ditemuka'
-                ]);
+            } catch (\Exception $e) {
+                Log::error('Error deleting user: ' . $e->getMessage());
+                if (str_contains($e->getMessage(), 'SQLSTATE[23000]')) {
+                    return response()->json([
+                        'status' => false,
+                        'message' => 'Data tidak dapat dihapus karena masih terkait dengan data lain di sistem'
+                    ]);
+                }
             }
-        } 
-        return redirect('/');   
+        }
+        return redirect('/');
     }
 
     // Menyimpan perubahan data user
