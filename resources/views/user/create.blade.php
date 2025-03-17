@@ -43,7 +43,7 @@
                     </div>
                 </div>
                 <div class="form-group row">
-                    <label class="col-1 control-label col-form-label">Password</label>
+                    <label class="col- control-label col-form-label">Password</label>
                     <div class="col-11">
                         <input type="password" class="form-control" id="password" name="password" required>
                         @error('password')

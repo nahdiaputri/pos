@@ -178,6 +178,14 @@ class UserController extends Controller
 
         return view('user.edit', ['breadcrumb' => $breadcrumb, 'page' => $page, 'user' => $user, 'level' => $level, 'activeMenu' => $activeMenu]);
     }
+
+    public function show_ajax(string $id){
+        $user = UserModel::find($id);
+        $level = LevelModel::all();
+
+        return view('user.show_ajax', ['user' => $user,'level'=> $level]);
+    }
+
     //Menampilkan halaman form edit user ajax
     public function edit_ajax(string $id) {
         $user = UserModel::find($id);
@@ -239,11 +247,19 @@ class UserController extends Controller
         if($request->ajax() || $request->wantsJson()){
             $user = UserModel::find($id);
             if($user){
-                $user->delete();
+                try {
+                    $user->delete();
                 return response()->json([
                     'status'=> true,
                     'message'=> 'Data berhasil dihapus'
                 ]);
+                } catch (\Throwable $th) {
+                return response()->json([
+                    'status'=> false,
+                    'message'=> 'Data tidak bisa dihapus'
+                ]);
+                }
+                
             }else{
                 return response()->json([
                     'status'=> false,
