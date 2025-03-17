@@ -45,7 +45,7 @@
         </div>
     </div>
     <!-- Tambahkan Modal -->
-    <div id="myModal" class="modal fade animate shake" tabindex="-1" role="dialog" databackdrop="static" data-keyboard="false" data-width="75%" aria-hidden="true"></div>
+    <div id="myModal" class="modal fade animate shake" tabindex="-1" role="dialog" data-backdrop="static" data-keyboard="false" data-width="75%" aria-hidden="true"></div>
 @endsection
 
 @push('css')
@@ -72,21 +72,48 @@
                     }
                 },
                 columns: [
-                    { data: "DT_RowIndex", className: "text-center", orderable: false, searchable: false },
-                    { data: "username", orderable: true, searchable: true },
-                    { data: "nama", orderable: true, searchable: true },
-                    { data: "level.level_nama", orderable: false, searchable: false },
-                    { data: "aksi", orderable: false, searchable: false }
-                ]
+                     // nomor urut dari laravel datatable addIndexColumn()
+                     {
+                         data: "DT_RowIndex",
+                         className: "text-center",
+                         orderable: false,
+                         searchable: false
+                     },
+                     {
+                         data: "username",
+                         className: "",
+                         orderable: true, // orderable: true, jika ingin kolom ini bisa diurutkan
+                         searchable: true // searchable: true, jika ingin kolom ini bisa dicari
+                     },
+                     {
+                         data: "nama",
+                         className: "",
+                         orderable: true,
+                         searchable: true
+                     },
+                     {
+                         // mengambil data level hasil dari ORM berelasi
+                         data: "level.level_nama",
+                         className: "",
+                         orderable: false,
+                         searchable: false
+                     },
+                     {
+                         data: "aksi",
+                         className: "",
+                         orderable: false,
+                         searchable: false
+                     }
+                 ]
             });
 
-            $('#level_id').on('change', function () {
-                dataUser.ajax.reload();
-            });
+            // $('#level_id').on('change', function () {
+            //     dataUser.ajax.reload();
+            // });
 
-            $('#myModal').on('hidden.bs.modal', function () {
-                dataUser.ajax.reload();
-            });
+            // $('#myModal').on('hidden.bs.modal', function () {
+            //     dataUser.ajax.reload();
+            // });
         });     
     </script>
 @endpush
