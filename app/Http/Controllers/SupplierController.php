@@ -28,7 +28,7 @@
  
      public function list(Request $request)
      {
-         $supplier = SupplierModel::select('supplier_kode', 'supplier_nama');
+         $supplier = SupplierModel::select('supplier_id', 'supplier_kode', 'supplier_nama', 'supplier_alamat');
  
          if ($request->supplier_nama) {
              $supplier->where('supplier_nama', 'like', '%' . $request->supplier_nama . '%');
