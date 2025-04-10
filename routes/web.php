@@ -19,7 +19,10 @@ Route::get('logout', [AuthController::class,'logout'])->middleware('auth');
 
 Route::middleware(['auth'])->group(function(){
     Route::get("/", [WelcomeController::class,"index"]);
-    
+
+    Route::get('/profile', [AuthController::class, 'profile'])->name('profile');
+    Route::post('/profile/update', [AuthController::class, 'updateProfile'])->name('profile.update');
+
     Route::middleware(['authorize:ADM,MNG'])->group(function(){
         Route::prefix('user')->group(function () {
             Route::get('/', [UserController::class, 'index']);
@@ -111,7 +114,8 @@ Route::middleware(['auth'])->group(function(){
             Route::get('/import',[BarangController::class, 'import']);
             Route::post('/import_ajax',[BarangController::class, 'import_ajax']);
             Route::get('/export_excel', [BarangController::class, 'export_excel']);
+            Route::get('/export_pdf', [BarangController::class, 'export_pdf']);
             Route::delete('/{id}', [BarangController::class, 'destroy']);
-        });
+        });     
     });
 });

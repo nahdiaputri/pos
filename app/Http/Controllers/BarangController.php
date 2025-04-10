@@ -11,6 +11,7 @@ use Illuminate\Support\Facades\Validator;
 use PhpOffice\PhpSpreadsheet\IOFactory;
 use Yajra\DataTables\Facades\DataTables;
 use Illuminate\Support\Facades\Log;
+use Barryvdh\DomPDF\Facade\Pdf;
  class BarangController extends Controller
  {
      public function index()
@@ -392,5 +393,19 @@ use Illuminate\Support\Facades\Log;
 
         $writer->save('php://output');
         exit;
+    }
+    public function export_pdf()
+    {
+        $barang = BarangModel::select('barang_kode', 'barang_nama', 'harga_beli','harga_jual', 'kategori_id')
+            ->orderBy('kategori_id')
+            ->with('kategori')
+            ->get();
+
+        $pdf = Pdf::loadView('barang.export_pdf', ['barang' => $barang]);
+        $pdf->setPaper('a4', 'portrait');
+        $pdf->setOption("isRemoteEnbled", true);
+        $pdf->render();
+
+        return $pdf->stream('Data Barang'.date('Y-m-d').'.pdf');
     }
 }
