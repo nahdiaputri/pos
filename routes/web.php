@@ -13,15 +13,14 @@ Route::pattern('id','[0-9]+');
 
 Route::get('login', [AuthController::class,'login'])->name('login');
 Route::post('login', [AuthController::class, 'postlogin']);
- Route::get('register', [AuthController::class, 'register'])->name('register');
- Route::post('register', [Authcontroller::class, 'postregister']);
+Route::get('register', [AuthController::class, 'register'])->name('register');
+Route::post('register', [Authcontroller::class, 'postregister']);
 Route::get('logout', [AuthController::class,'logout'])->middleware('auth');
 
 Route::middleware(['auth'])->group(function(){
     Route::get("/", [WelcomeController::class,"index"]);
-
-    Route::get('/profile', [AuthController::class, 'profile'])->name('profile');
-    Route::post('/profile/update', [AuthController::class, 'updateProfile'])->name('profile.update');
+    Route::get("/profil/{id}",[AuthController::class,'profil']);
+    Route::post("/profil/upload/{id}",[AuthController::class,'upload_profile']);
 
     Route::middleware(['authorize:ADM,MNG'])->group(function(){
         Route::prefix('user')->group(function () {

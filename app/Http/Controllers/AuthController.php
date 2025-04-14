@@ -1,7 +1,8 @@
 <?php
  
 namespace App\Http\Controllers;
- 
+
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use App\Models\UserModel;
@@ -91,4 +92,50 @@ class AuthController extends Controller
  
          return redirect('/');
      }
+
+     public function profil($id){
+        $breadcrumb = (object) [
+            'title' => 'Profil',
+            'list'  => ['Home', 'Profil']
+        ];
+
+        $activeMenu = 'profile'; // set menu yang sedang aktif
+        $user = UserModel::findOrFail($id);
+        return view('auth.profile', [
+            'breadcrumb' => $breadcrumb,
+            'user'=> $user,
+            'activeMenu' => $activeMenu
+        ]);
+     }
+     
+    public function upload_profile($id){
+
+        $validator = Validator::make(request()->all(), [
+            'profile' => 'required|image', // For base64 encoded images
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Validation Error',
+                'errors' => $validator->errors()
+            ]);
+        }
+
+        $user = UserModel::find($id);
+        if (!$user) {
+            return response()->json([
+                'status' => false,
+                'message' => 'User not found'
+            ]);
+        }
+        $image = request()->file('profile');
+        $base64Image = 'data:image/' . $image->getClientOriginalExtension() . ';base64,' . base64_encode(file_get_contents($image->path()));
+        
+        // Save the base64 string directly to database
+        $user->profile = $base64Image;
+        $user->save();
+
+        return redirect("/profile/{$id}")->with('success', 'Profile photo updated successfully');
+    }
  }

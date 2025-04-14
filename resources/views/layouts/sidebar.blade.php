@@ -14,6 +14,12 @@
     <nav class="mt-2">
         <ul class="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu" data-accordion="false">
             <li class="nav-item">
+                <a href="{{ url('/profil/' .Auth::user()->user_id) }}" class="nav-link {{ ($activeMenu == 'profil') ? 'active' : '' }}">
+                    <i class="nav-icon fas fa-user-circle"></i>
+                    <p>Profil</p>
+                </a>
+            </li>
+            <li class="nav-item">
                 <a href="{{ url('/') }}" class="nav-link {{ ($activeMenu == 'dashboard') ? 'active' : '' }}">
                     <i class="nav-icon fas fa-tachometer-alt"></i>
                     <p>Dashboard</p>

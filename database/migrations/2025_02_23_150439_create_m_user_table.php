@@ -17,6 +17,7 @@ return new class extends Migration
             $table->string("username", 20)->unique(); // unique untuk memastikan tidak ada username yang sama
             $table->string("nama", 100);
             $table->string("password");
+            $table->mediumBlob("profile")->nullable;
             $table->timestamps();
 
             // Mendefinisikan Foreign Key pada kolom level_id mengacu pada kolom level_id di tabel m_level
