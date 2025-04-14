@@ -8,6 +8,8 @@ use Illuminate\Support\Facades\Validator;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Yajra\DataTables\Facades\DataTables;
+use Barryvdh\DomPDF\Facade\Pdf as FacadePdf;
+use PhpOffice\PhpSpreadsheet\IOFactory;
 
 class UserController extends Controller
 {
@@ -310,5 +312,129 @@ public function destroy(string $id)
             return redirect('/user')->with('error', 'Data user gagal dihapus karena masih terdapat tabel lain yang terkait dengan data ini');
         }
     }
-    
+    public function import()
+     {
+         return view('user.import');
+     }
+ 
+     public function import_ajax(Request $request) 
+     { 
+         if($request->ajax() || $request->wantsJson()){ 
+             $rules = [ 
+                 // validasi file harus xls atau xlsx, max 1MB 
+                 'file_user' => ['required', 'mimes:xlsx', 'max:1024'] 
+             ]; 
+  
+             $validator = Validator::make($request->all(), $rules); 
+             if($validator->fails()){ 
+                 return response()->json([ 
+                     'status' => false, 
+                     'message' => 'Validasi Gagal', 
+                     'msgField' => $validator->errors() 
+                 ]); 
+             } 
+  
+             $file = $request->file('file_user');  // ambil file dari request 
+  
+             $reader = IOFactory::createReader('Xlsx');  // load reader file excel 
+             $reader->setReadDataOnly(true);             // hanya membaca data 
+             $spreadsheet = $reader->load($file->getRealPath()); // load file excel 
+             $sheet = $spreadsheet->getActiveSheet();    // ambil sheet yang aktif 
+  
+             $data = $sheet->toArray(null, false, true, true);   // ambil data excel 
+  
+             $insert = []; 
+             if(count($data) > 1){ // jika data lebih dari 1 baris 
+                 foreach ($data as $baris => $value) { 
+                     if($baris > 1){ // baris ke 1 adalah header, maka lewati 
+                         $insert[] = [ 
+                             'level_id' => $value['A'], 
+                             'username' => $value['B'], 
+                             'nama' => $value['C'], 
+                             'created_at' => now(), 
+                         ]; 
+                     } 
+                 } 
+  
+                 if(count($insert) > 0){ 
+                     // insert data ke database, jika data sudah ada, maka diabaikan 
+                     UserModel::insertOrIgnore($insert);    
+                 } 
+  
+                 return response()->json([ 
+                     'status' => true, 
+                     'message' => 'Data berhasil diimport' 
+                 ]); 
+             }else{ 
+                 return response()->json([ 
+                     'status' => false, 
+                     'message' => 'Tidak ada data yang diimport' 
+                 ]); 
+             } 
+         } 
+         return redirect('/'); 
+     } 
+ 
+     public function export_excel(){
+         $user= UserModel::select('level_id', 'username', 'nama')
+         ->orderBy('level_id')
+         ->with('level')
+         ->get()
+         ;
+ 
+         $spreadsheeet = new \PhpOffice\PhpSpreadsheet\Spreadsheet();
+         $sheet = $spreadsheeet->getActiveSheet();
+ 
+         $sheet->setCellValue('A1', 'No');
+         $sheet->setCellValue('b1', 'Level ID');
+         $sheet->setCellValue('C1', 'Username');
+         $sheet->setCellValue('D1', 'Nama');
+ 
+         $sheet->getStyle('A1:F1')->getFont()->setBold(true);
+ 
+         $no=1;
+         $baris=2;
+         foreach($user as $key => $value){
+             $sheet->setCellValue('A'.$baris, $no++);
+             $sheet->setCellValue('B'.$baris, $value->level_id);
+             $sheet->setCellValue('C'.$baris, $value->username);
+             $sheet->setCellValue('D'.$baris, $value->nama);
+             $baris++;
+             $no++;
+         }
+ 
+         foreach(range('A','F') as $columnID){
+             $sheet->getColumnDimension($columnID)->setAutoSize(true);
+         }
+ 
+         $sheet->setTitle('Data User');
+         $writer = IOFactory::createWriter($spreadsheeet, 'Xlsx');
+         $fileName = 'Data User '.date('Y-m-d H:i:s').'.xlsx';
+ 
+         header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+         header('Content-Disposition: attachment;filename="'.$fileName.'"');
+         header('Cache-Control: max-age=0');
+         header('Cache-Control: max-age=1');
+         header('Expires: Mon, 26 Jul 1997 05:00:00 GMT');
+         header('Last-Modified: '.gmdate('D, d M Y H:i:s').' GMT');
+         header('Cache-Control: cache, must-revalidate');
+         header('Pragma: public');
+         $writer->save('php://output');
+         exit;
+     }
+ 
+     public function export_pdf(){
+         $user= UserModel::select('level_id', 'username', 'nama')
+         ->orderBy('level_id')
+         ->with('level')
+         ->get()
+         ;
+ 
+         $pdf = FacadePdf::loadview('user.export_pdf', ['user' => $user]);
+         $pdf->setPaper('A4', 'portrait');
+         $pdf->setOption("isRemoteEnabled", true);
+         $pdf->render();
+ 
+         return $pdf->stream('Data User '.date('Y-m-d H:i:s').'.pdf'); 
+        }
 } 
