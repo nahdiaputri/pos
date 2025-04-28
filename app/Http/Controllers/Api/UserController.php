@@ -13,7 +13,6 @@ class UserController extends Controller
     {
         return response()->json(UserModel::all());
     }
-
     public function store(Request $request): JsonResponse
     {
     $validated = $request->validate([
@@ -26,8 +25,6 @@ class UserController extends Controller
     $user = UserModel::create($validated);
     return response()->json($user, 201);
 }
-
-
     public function show(UserModel $user): JsonResponse
     {
         return response()->json($user);
@@ -52,7 +49,6 @@ class UserController extends Controller
 
     return response()->json($user, 200);
     }
-
 
     public function destroy(UserModel $user): JsonResponse
     {
