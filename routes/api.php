@@ -21,6 +21,7 @@ use App\Http\Controllers\LevelController as ControllersLevelController;
 // Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 //     return $request->user();
 // });
+//UNTUK RUBAH COMMIT SAJA
 Route::get('levels',[LevelController::class,'index']);
 Route::post('levels',[LevelController::class,'store']);
 Route::get('levels/{level}', [LevelController::class, 'show']);

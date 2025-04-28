@@ -26,6 +26,8 @@ class LevelController extends Controller
         return response()->json($level, 200);
     }
 
+    //UNTUK RUBAH COMMIT
+
     public function destroy(LevelModel $level ) {
         $level->delete();
         return response()->json([
