@@ -1,5 +1,7 @@
 <?php
 namespace App\Http\Controllers;
+use App\Models\BarangModel;
+use App\Models\StokModel;
 
 class WelcomeController extends Controller
 {
@@ -12,6 +14,19 @@ class WelcomeController extends Controller
 
         $activeMenu = 'dashboard';
 
-        return view('welcome', ['breadcrumb' => $breadcrumb, 'activeMenu' => $activeMenu]);
-    }
+        $barang = BarangModel::all();
+        $stok = StokModel::all(); // Ambil semua barang beserta stoknya
+    // Atau jika hanya ingin total stok semua barang:
+    // $totalStok = BarangModel::sum('barang_stok');
+
+    return view('welcome', [
+        'breadcrumb' => $breadcrumb,
+        'activeMenu' => $activeMenu,
+        'barang' => $barang,
+        'stok' => $stok
+        // 'totalStok' => $totalStok
+    ]);
+}
+
+
 }

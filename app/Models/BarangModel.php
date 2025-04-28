@@ -5,7 +5,7 @@
  use Illuminate\Database\Eloquent\Factories\HasFactory;
  use Illuminate\Database\Eloquent\Model;
  use Illuminate\Database\Eloquent\Relations\BelongsTo;
- 
+use Illuminate\Database\Eloquent\Relations\HasOne; 
  class BarangModel extends Model
  {
      use HasFactory;
@@ -24,5 +24,13 @@
      public function kategori():BelongsTo
      {
          return $this->belongsTo(KategoriModel::class, 'kategori_id', 'kategori_id');
+     }
+     public function getAllBarang()
+    {
+        return $this->all(); // Mengambil semua data dari tabel barang
+    }
+    public function stok():BelongsTo
+     {
+         return $this->belongsTo(StokModel::class, 'barang_id', 'barang_id');
      }
  }
