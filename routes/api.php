@@ -9,6 +9,7 @@ use App\Http\Controllers\Api\LevelController;
 use App\Http\Controllers\LevelController as ControllersLevelController;
 use App\Http\Controllers\Api\UserController;
 use App\Http\Controllers\Api\KategoriController;
+use App\Http\Controllers\Api\BarangController;
 
 
 /*
@@ -25,9 +26,13 @@ use App\Http\Controllers\Api\KategoriController;
 // Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 //     return $request->user();
 // });
+//CRUD UNTUK m_barang
+Route::get('barang', [BarangController::class, 'index']);
+Route::post('barang', [BarangController::class, 'store']);
+Route::get('barang/{barang}', [BarangController::class, 'show']);
+Route::put('barang/{barang}', [BarangController::class, 'update']);
+Route::delete('barang/{barang}', [BarangController::class, 'destroy']);
 //CRUD UNTUK m_kategori
-
-
 Route::get('kategori', [KategoriController::class, 'index']);
 Route::post('kategori', [KategoriController::class, 'store']);
 Route::get('kategori/{kategori}', [KategoriController::class, 'show']);
