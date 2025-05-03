@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 use App\Models\BarangModel;
 
 class BarangController extends Controller
@@ -22,9 +23,23 @@ class BarangController extends Controller
             'barang_nama' => 'required',
             'harga_beli' => 'required|integer',
             'harga_jual' => 'required|integer',
+            'image' => 'required|image|mimes:jpeg,png,jpg|max:2048'
         ]);
 
-        $barang = BarangModel::create($request->all());
+        // Upload file gambar
+        $image = $request->file('image');
+        $image->storeAs('public/posts', $image->hashName());
+
+        // Simpan data barang
+        $barang = BarangModel::create([
+            'kategori_id' => $request->kategori_id,
+            'barang_kode' => $request->barang_kode,
+            'barang_nama' => $request->barang_nama,
+            'harga_beli' => $request->harga_beli,
+            'harga_jual' => $request->harga_jual,
+            'image' => $image->hashName()
+        ]);
+
         return response()->json([
             'message' => 'Data barang berhasil ditambahkan',
             'data' => $barang
@@ -55,9 +70,23 @@ class BarangController extends Controller
             'barang_kode' => 'sometimes|unique:m_barang,barang_kode,' . $id . ',barang_id',
             'harga_beli' => 'sometimes|integer',
             'harga_jual' => 'sometimes|integer',
+            'image' => 'sometimes|image|mimes:jpeg,png,jpg|max:2048'
         ]);
 
-        $barang->update($request->all());
+        // Jika ada file gambar baru
+        if ($request->hasFile('image')) {
+            // Hapus file gambar lama
+            Storage::delete('public/posts/' . $barang->image);
+
+            // Upload gambar baru
+            $image = $request->file('image');
+            $image->storeAs('public/posts', $image->hashName());
+
+            $barang->image = $image->hashName();
+        }
+
+        // Update field lainnya
+        $barang->update($request->except('image'));
 
         return response()->json([
             'message' => 'Data barang berhasil diperbarui',
@@ -72,6 +101,9 @@ class BarangController extends Controller
         if (!$barang) {
             return response()->json(['message' => 'Data barang tidak ditemukan'], 404);
         }
+
+        // Hapus file gambar
+        Storage::delete('public/posts/' . $barang->image);
 
         $barang->delete();
 

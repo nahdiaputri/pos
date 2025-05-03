@@ -10,6 +10,7 @@ use App\Http\Controllers\LevelController as ControllersLevelController;
 use App\Http\Controllers\Api\UserController;
 use App\Http\Controllers\Api\KategoriController;
 use App\Http\Controllers\Api\BarangController;
+use App\Http\Controllers\Api\PenjualanController;
 
 
 /*
@@ -26,6 +27,17 @@ use App\Http\Controllers\Api\BarangController;
 // Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 //     return $request->user();
 // });
+//API PENJUALAN
+
+// Route untuk API Penjualan
+Route::get('penjualan', [App\Http\Controllers\Api\PenjualanController::class, 'index']);
+Route::post('penjualan', [App\Http\Controllers\Api\PenjualanController::class, 'store']);
+Route::get('penjualan/{id}', [App\Http\Controllers\Api\PenjualanController::class, 'show']);
+Route::put('penjualan/{id}', [App\Http\Controllers\Api\PenjualanController::class, 'update']);
+Route::delete('penjualan/{id}', [App\Http\Controllers\Api\PenjualanController::class, 'destroy']);
+
+// Endpoint laporan penjualan
+Route::get('penjualan-report', [App\Http\Controllers\Api\PenjualanController::class, 'report']);
 //CRUD UNTUK m_barang
 Route::get('barang', [BarangController::class, 'index']);
 Route::post('barang', [BarangController::class, 'store']);
@@ -52,6 +64,7 @@ Route::put('levels/{level}', [LevelController::class, 'update']);
 Route::delete('levels/{level}', [LevelController::class, 'destroy']);
 //----------------------------------------------------------------------------------------------------------------//
 Route::post('/register', \App\Http\Controllers\Api\RegisterController::class)->name('register');
+Route::post('/register1', \App\Http\Controllers\Api\RegisterController::class)->name('register1');
 Route::post('/login', \App\Http\Controllers\Api\LoginController::class)->name('login');
 Route::post('/logout', \App\Http\Controllers\Api\LogoutController::class)->name('logout');
 Route::middleware('auth:api')->get('/user', function (Request $request) {

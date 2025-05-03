@@ -16,12 +16,17 @@ class RegisterController extends Controller
             'username' => 'required',
             'nama' => 'required',
             'password' => 'required|min:5|confirmed',
-            'level_id' => 'required'
+            'level_id' => 'required',
+            'image' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048',
         ]);
 
         if ($validator->fails()) {
             return response()->json($validator->errors(), 422);
         }
+
+        //proses simpan file
+        $image = $request->file('image');
+        $image->storeAs('public/users', $image->hashName());
 
         //create user
         $user = UserModel::create([
@@ -29,6 +34,7 @@ class RegisterController extends Controller
             'nama' => $request->nama,
             'password' => bcrypt($request->password),
             'level_id' => $request->level_id,
+            'image' => $image->hashName(),
         ]);
 
         //return response JSON user is created
